@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>de.blinkenlights</groupId>
+    <artifactId>blinkenlights-parent</artifactId>
+    <version>1.5-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <name>Blinkenlights Sender</name>
+  <artifactId>bmix-sender</artifactId>
+
+  <dependencies>
+    <dependency>
+      <groupId>de.blinkenlights</groupId>
+      <artifactId>bmix</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>osxappbundle-maven-plugin</artifactId>
+        <version>1.0-alpha-1</version>
+        <configuration>
+          <mainClass>de.blinkenlights.sender.Sender</mainClass>
+          <iconFile>src/main/osx/Blinkensender.icns</iconFile>
+          <javaApplicationStub>src/main/osx/BlinkensenderStub</javaApplicationStub>
+          <jvmVersion>1.5+</jvmVersion>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

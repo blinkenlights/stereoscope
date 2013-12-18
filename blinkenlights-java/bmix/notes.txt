@@ -1,0 +1,34 @@
+BMix Notes
+
+==StatsClient To do==
+* show tree structure in multiple layer columns
+* get rid of HTML (use statbox subclasses with individual layouts)
+* show output and input viewports over vmatrix
+* outputs should have names
+* generate OIDs for each real object that is the subject of bmix statistics
+* better startup - bullet-proofingness
+* represent relay senders as separate boxes
+
+===Done===
+* centre columns vertically
+* render input graphics on each layer infobox
+
+
+===v1.4===
+* config reload
+
+
+===v1.3===
+* new config and runtime statistics network protocol with GUI client. features include:
+* configurable chroma key color (default is still black)
+* shadow mode on each input to allow background layer to partially show through the transparent parts
+* more status messages on debug
+* multi-screen multiframe packet sending
+
+==Future Features==
+
+* "live" reconfigure without restart
+
+==Other/Infrastructure== 
+
+* Check all code with Findbugs!

@@ -1,0 +1,126 @@
+<!--
+/* 
+ * This file is part of BMix.
+ *
+ *    BMix is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ * 
+ *    BMix is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with BMix.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ */
+-->
+
+<!ELEMENT bmix (input+,layer+,output*)>
+<!ATTLIST bmix version CDATA #REQUIRED>
+<!ATTLIST bmix vmatrix-width CDATA #REQUIRED>
+<!ATTLIST bmix vmatrix-height CDATA #REQUIRED>
+<!ATTLIST bmix max-frame-interval CDATA "100">
+
+
+<!ELEMENT input (relay-target*)>
+<!ATTLIST input id ID #REQUIRED>
+<!ATTLIST input listen-addr CDATA "0.0.0.0">
+<!ATTLIST input listen-port CDATA "2323">
+<!ATTLIST input heartbeat-dest-addr CDATA #IMPLIED>
+<!ATTLIST input heartbeat-dest-port CDATA "4242">
+<!-- valid alpha-mode options:
+		opaque      alpha channel ignored even if present
+		chroma-key  one colour is fully transparent; all others are opaque
+		brightness  all pixels are full white, and opacity is set to brightness
+		(none specified) chroma key (and the default colour is black, but that's another episode)
+ -->
+<!ATTLIST input alpha-mode CDATA "chroma-key">
+
+<!ATTLIST input scale-mode CDATA "nearest-neighbour">
+
+<!-- HTML-style 24-bit hex string, prefixed by # just to be obnoxious (i.e. for forward compatibility)
+     Defaults to black. Ignored unless alpha mode is chroma-key. -->
+<!ATTLIST input chroma-key-colour CDATA "#000000">
+
+<!-- specifies an offset into the input frame used when creating a layer 
+     image from this input -->
+<!ATTLIST input cropx CDATA #IMPLIED>
+<!ATTLIST input cropy CDATA #IMPLIED>
+
+<!--
+    Fully-transparent pixels in the image will appear as this
+    colour instead. If no translation is desired, this value
+    should be set to null.
+-->
+<!ATTLIST input shadow-colour CDATA #IMPLIED>
+
+<!-- input timeout in milliseconds.  If there is no frame for this much time, 
+the input will be set to transparent. -->
+<!ATTLIST input timeout CDATA "1000">
+
+
+<!-- Relay targets receive a copy of every frame received on the input they belong to -->
+<!ELEMENT relay-target EMPTY>
+<!ATTLIST relay-target dest-addr CDATA #REQUIRED>
+<!ATTLIST relay-target dest-port CDATA #REQUIRED>
+
+<!-- Layers are nestable rectangular regions that paint to the vmatrix. -->
+<!ELEMENT layer (layer*)>
+<!ATTLIST layer input IDREF #REQUIRED>
+<!ATTLIST layer opacity CDATA "100">
+<!ATTLIST layer x CDATA #REQUIRED>
+<!ATTLIST layer y CDATA #REQUIRED>
+<!ATTLIST layer width CDATA #REQUIRED>
+<!ATTLIST layer height CDATA #REQUIRED>
+
+<!-- outputs consist of one or more rectangular viewports on the virtual buffer
+     that are sent to a specified destination address using the same protocol
+     family accepted by inputs. -->
+<!ELEMENT output (screen+)>
+<!ATTLIST output dest-addr CDATA #REQUIRED>
+<!-- <!ATTLIST output dest-port CDATA #REQUIRED> -->
+<!ATTLIST output dest-port CDATA "2323">
+<!ATTLIST output min-frame-interval CDATA "0">
+<!-- outputs can be send in one of two formats: MCU_FRAME, MCU_MULTIFRAME, or HACKLAB_SIGN -->
+<!ATTLIST output packet-format CDATA "MCU_FRAME">
+
+<!-- screens specify the individual viewports geometries of an output.
+     Presently, only the MCU_MULTIFRAME output type supports multiple screens.
+     For all other output packet types, it is an error to include more than one
+     screen element.
+-->
+<!ELEMENT screen EMPTY>
+<!ATTLIST screen x CDATA #REQUIRED>
+<!ATTLIST screen y CDATA #REQUIRED>
+<!ATTLIST screen width CDATA #REQUIRED>
+<!ATTLIST screen height CDATA #REQUIRED>
+<!-- multiframe outputs can have a bits-per-pixel of either 4 or 8 -->
+<!ATTLIST screen bpp CDATA "4">
+<!ATTLIST screen screen-id CDATA "0">
+
+
+<!-- An output that listens for heartbeats on a certain port and begins
+     sending the specified screens to all addresses from which a heartbeat
+     has been received recently.
+-->
+<!ELEMENT dynamic-output (screen+)>
+<!ATTLIST dynamic-output listen-addr CDATA "0.0.0.0">  <!-- defaults to all local addresses -->
+<!ATTLIST dynamic-output listen-port CDATA "4242">
+<!ATTLIST dynamic-output heartbeat-timeout CDATA "15000">
+<!ATTLIST dynamic-output min-frame-interval CDATA "0">
+<!-- outputs can be send in one of two formats: MCU_FRAME, or MCU_MULTIFRAME -->
+<!ATTLIST dynamic-output packet-format CDATA "MCU_FRAME">
+
+<!-- An output that records each frame to a BML file on disk.
+-->
+<!ELEMENT recording-output (screen+)>
+<!ATTLIST recording-output directory CDATA ".">  <!-- defaults to current directory -->
+ <!-- base filename, appropriate timestamp and extension will be appended
+  -->
+<!ATTLIST recording-output base-name CDATA "recording"> 
+<!ATTLIST recording-output gzip CDATA "true">  <!-- true for gzip recording -->
+<!ATTLIST recording-output min-frame-interval CDATA "0">
+
