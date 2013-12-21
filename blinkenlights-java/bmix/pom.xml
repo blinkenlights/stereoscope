@@ -14,6 +14,11 @@
   <artifactId>bmix</artifactId>
 
   <dependencies>
+  	<dependency>
+	    <groupId>mrj</groupId>
+	    <artifactId>MRJToolkitStubs</artifactId>
+	    <version>1.0</version>
+	</dependency>
     <dependency>
       <groupId>org.rxtx</groupId>
       <artifactId>rxtx</artifactId>
