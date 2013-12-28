@@ -49,6 +49,7 @@ import de.blinkenlights.bmix.movie.MovieRecorderOutput;
 import de.blinkenlights.bmix.network.BLPacketReceiver;
 import de.blinkenlights.bmix.network.BLPacketSender;
 import de.blinkenlights.bmix.network.BLPacketReceiver.AlphaMode;
+import de.blinkenlights.bmix.network.CCCAirportDisplaySender;
 import de.blinkenlights.bmix.util.FileFormatException;
 
 public class BMixSAXHandler extends DefaultHandler {
@@ -225,6 +226,9 @@ public class BMixSAXHandler extends DefaultHandler {
             	OutputSender outputSender = null; 
                 if(packetFormat == PacketType.HACKLAB_SIGN) {
                 	outputSender = new HacklabSignDriver(destAddr);
+                }
+                else if(packetFormat == PacketType.CCC_AIRPORT_DISPLAY) {
+                	outputSender = new CCCAirportDisplaySender(destAddr, destPort);
                 }
                 else {                	
                     outputSender = new BLPacketSender(destAddr, destPort);

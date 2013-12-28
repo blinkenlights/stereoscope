@@ -31,7 +31,7 @@ import de.blinkenlights.bmix.protocol.BLMultiframePacket;
 
 public abstract class AbstractOutput implements Output {
 	
-    public static enum PacketType { MCU_FRAME, MCU_MULTIFRAME, HACKLAB_SIGN }
+    public static enum PacketType { MCU_FRAME, MCU_MULTIFRAME, HACKLAB_SIGN, CCC_AIRPORT_DISPLAY }
 
     protected final PacketType packetType;
     
@@ -102,6 +102,9 @@ public abstract class AbstractOutput implements Output {
                 BLMultiframePacket p = new BLMultiframePacket(viewports);
                 sender.send(p.getNetworkBytes());
             } else if(packetType == PacketType.HACKLAB_SIGN) {
+                AbstractFramePacket p = new BLFramePacket(viewports.get(0));
+                sender.send(p.getNetworkBytes());            	
+            } else if(packetType == PacketType.CCC_AIRPORT_DISPLAY) {
                 AbstractFramePacket p = new BLFramePacket(viewports.get(0));
                 sender.send(p.getNetworkBytes());            	
             }
