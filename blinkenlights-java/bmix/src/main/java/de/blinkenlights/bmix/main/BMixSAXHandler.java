@@ -228,7 +228,8 @@ public class BMixSAXHandler extends DefaultHandler {
                 	outputSender = new HacklabSignDriver(destAddr);
                 }
                 else if(packetFormat == PacketType.CCC_AIRPORT_DISPLAY) {
-                	outputSender = new CCCAirportDisplaySender(destAddr, destPort);
+                    String mode = attributes.getValue("mode");
+                	outputSender = new CCCAirportDisplaySender(destAddr, destPort, mode);
                 }
                 else {                	
                     outputSender = new BLPacketSender(destAddr, destPort);

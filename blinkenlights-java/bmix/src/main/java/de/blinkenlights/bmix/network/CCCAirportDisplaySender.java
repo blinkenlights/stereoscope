@@ -24,7 +24,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.blinkenlights.bmix.mixer.OutputSender;
@@ -94,11 +93,13 @@ public class CCCAirportDisplaySender implements OutputSender {
     DatagramSocket socket = null;
 	InetAddress address = null;
 	int port;
+	boolean charOnlyMode = false;
 	
 	private final static Logger logger = Logger.getLogger(CCCAirportDisplaySender.class.getName());
 	private final static int CMD_CP437DATA = 0x0003;
-	private final static int DISPLAY_W = 55;
-	private final static int DISPLAY_H = 19;
+	private final static int CMD_CHARBRIGHTNESS = 0x0005;
+	private final static int DISPLAY_W = 56;
+	private final static int DISPLAY_H = 20;
 	private final static int CHAR_BLANK = 32;
 	private final static int CHAR_QUARTER = 176;
 	private final static int CHAR_HALF = 177;
@@ -110,8 +111,9 @@ public class CCCAirportDisplaySender implements OutputSender {
 	 * 
 	 * @param host the hostname or IP address of the destination
 	 * @param port the port on the destination
+	 * @param mode output mode "greyscale" or "char"
 	 */
-	public CCCAirportDisplaySender(String host, int port) throws BLNetworkException {
+	public CCCAirportDisplaySender(String host, int port, String mode) throws BLNetworkException {
 		try {
 			address = InetAddress.getByName(host);
 			this.port = port;
@@ -121,7 +123,17 @@ public class CCCAirportDisplaySender implements OutputSender {
 		} catch (SocketException e) {
 			throw new BLNetworkException(e.getMessage());
 		}
-		logger.info("BLPacketSender() - host: " + host + " - port: " + port);		
+		mode = mode.toUpperCase();
+		if(mode.equals("GREYSCALE")) {
+			charOnlyMode = false;
+		}
+		else if(mode.equals("CHAR")) {
+			charOnlyMode = true;
+		}
+		else {
+			throw new BLNetworkException("unsupported mode: " + mode);
+		}
+		logger.info("BLPacketSender() - host: " + host + " - port: " + port + " - mode: " + mode);		
 	}
 
     /**
@@ -142,7 +154,6 @@ public class CCCAirportDisplaySender implements OutputSender {
 		send(buf, 0, buf.length);
 	}
 
-	
 	/**
 	 * Sends a message to the client.
 	 * 
@@ -153,6 +164,7 @@ public class CCCAirportDisplaySender implements OutputSender {
 	 */
 	public void send(byte buf[], int offset, int length) throws IOException {
 		byte outBufChar[] = new byte[10 + (DISPLAY_W * DISPLAY_H)];
+		byte outBufBright[] = new byte[10 + (DISPLAY_W * DISPLAY_H)];
 		int outCount = 0;
 		int inCount = 0;
 		if(buf.length < 12) {
@@ -163,6 +175,7 @@ public class CCCAirportDisplaySender implements OutputSender {
 					" - length: " + length + " - buf len: " + buf.length);
 		}
 		
+		// figure out the size
 		int inHeight = ((buf[4] & 0xff) << 8) | (buf[5] & 0xff);
 		int inWidth = ((buf[6] & 0xff) << 8) | (buf[7] & 0xff);
 		int outHeight = inHeight;
@@ -175,6 +188,8 @@ public class CCCAirportDisplaySender implements OutputSender {
 		}
 				
 		// do header bytes
+		// chars packet - in char only mode it uses one of 5 symbols to simulate greyscale
+		// in greyscale mode it turns off pixels that black 
 		outBufChar[0] = (byte)(CMD_CP437DATA >> 8);
 		outBufChar[1] = (byte)(CMD_CP437DATA & 0xff);
 		outBufChar[2] = 0;  // X hi
@@ -185,53 +200,100 @@ public class CCCAirportDisplaySender implements OutputSender {
 		outBufChar[7] = (byte)DISPLAY_W;  // W lo
 		outBufChar[8] = 0;  // H hi
 		outBufChar[9] = (byte)DISPLAY_H;  // H lo
-
+		
+		// brightness packet
+		outBufBright[0] = (byte)(CMD_CHARBRIGHTNESS >> 8);
+		outBufBright[1] = (byte)(CMD_CHARBRIGHTNESS & 0xff);
+		outBufBright[2] = 0;  // X hi
+		outBufBright[3] = 0;  // X lo
+		outBufBright[4] = 0;  // Y hi
+		outBufBright[5] = 0;  // Y lo
+		outBufBright[6] = 0;  // W hi
+		outBufBright[7] = (byte)DISPLAY_W;  // W lo
+		outBufBright[8] = 0;  // H hi
+		outBufBright[9] = (byte)DISPLAY_H;  // H lo
+		
 		inCount = 12;  // skip BL header
 		outCount = 10;  // skip the header we already wrote
-		// do each line
-		for(int row = 0; row < outHeight; row ++) {
-			// do each column of a row
-			for(int col = 0; col < outWidth; col ++) {
-				switch(buf[inCount++]) {
-				case 0:
-				case 1:
-				case 2:
-					outBufChar[outCount++] = (byte)CHAR_BLANK;
-					break;
-				case 3:
-				case 4:
-				case 5:
-					outBufChar[outCount++] = (byte)CHAR_QUARTER;
-					break;
-				case 6:
-				case 7:
-				case 8:
-					outBufChar[outCount++] = (byte)CHAR_HALF;
-					break;
-				case 9:
-				case 10:
-				case 11:
-					outBufChar[outCount++] = (byte)CHAR_THREE_QUARTER;
-					break;
-				case 12:
-				case 13:
-				case 14:
-				case 15:					
-					outBufChar[outCount++] = (byte)CHAR_FULL;
-					break;					
+
+		// make a packet that simulates greyscale with 5 CP437 chars
+		if(charOnlyMode) {
+			// do each line
+			for(int row = 0; row < outHeight; row ++) {
+				// do each column of a row
+				for(int col = 0; col < outWidth; col ++) {
+					switch((buf[inCount++] & 0xff) >> 4) {
+					case 0:
+					case 1:
+					case 2:
+						outBufChar[outCount++] = (byte)CHAR_BLANK;
+						break;
+					case 3:
+					case 4:
+					case 5:
+						outBufChar[outCount++] = (byte)CHAR_QUARTER;
+						break;
+					case 6:
+					case 7:
+					case 8:
+						outBufChar[outCount++] = (byte)CHAR_HALF;
+						break;
+					case 9:
+					case 10:
+					case 11:
+						outBufChar[outCount++] = (byte)CHAR_THREE_QUARTER;
+						break;
+					case 12:
+					case 13:
+					case 14:
+					case 15:					
+						outBufChar[outCount++] = (byte)CHAR_FULL;
+						break;					
+					}
+				}
+				if(inWidth > outWidth) {
+					inCount += (inWidth - outWidth);
+				}
+			}			
+	        DatagramPacket packet = new DatagramPacket(outBufChar, 0, outBufChar.length, address, port);
+	        synchronized (this) {			
+		        if (!socket.isClosed()) {
+		        	socket.send(packet);
+		        }
+	        }
+		}
+		// do greyscale mode with 4 bits per pixel - it makes 2 packets per frame
+		// the char packet displays a solid block except if the brighness is 0, where it makes a blank char
+		// this is because the display will not go off with brighness setting of 0
+		// the brightness packet sets the brightness for each character to one of 16 levels
+		else {
+			// do each line
+			for(int row = 0; row < outHeight; row ++) {
+				// do each column of a row
+				for(int col = 0; col < outWidth; col ++) {
+					int pixbright = (buf[inCount++] & 0xff) >> 4;
+					if(pixbright > 0) {
+						outBufChar[outCount] = (byte)CHAR_FULL;
+					}
+					else {
+						outBufChar[outCount] = (byte)CHAR_BLANK;						
+					}
+					outBufBright[outCount] = (byte)pixbright;
+					outCount ++;
+				}
+				if(inWidth > outWidth) {
+					inCount += (inWidth - outWidth);
 				}
 			}
-			if(inWidth > outWidth) {
-				inCount += (inWidth - outWidth);
-			}
-		}
-		
-        DatagramPacket packet = new DatagramPacket(outBufChar, 0, outBufChar.length, address, port);
-        synchronized (this) {			
-	        if (!socket.isClosed()) {
-	        	socket.send(packet);
+	        DatagramPacket packetChar = new DatagramPacket(outBufChar, 0, outBufChar.length, address, port);
+	       	DatagramPacket packetBright = new DatagramPacket(outBufBright, 0, outBufBright.length, address, port);
+	        synchronized (this) {			
+		        if (!socket.isClosed()) {
+		        	socket.send(packetChar);
+		        	socket.send(packetBright);
+		        }
 	        }
-        }
+		}		
 	}
 	
 	@Override
@@ -239,12 +301,20 @@ public class CCCAirportDisplaySender implements OutputSender {
 	    return address.getHostAddress() + ":" + port;
 	}
 
-
+	/**
+	 * Gets the network address.
+	 * 
+	 * @return the network address
+	 */
 	public String getAddress() {
 		return address.getHostAddress();
 	}
 
-
+	/**
+	 * Gets the network port.
+	 * 
+	 * @return the network port
+	 */
 	public int getPort() {
 		return port;
 	}
