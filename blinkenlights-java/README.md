@@ -17,7 +17,7 @@ formats are supported.
 ## How to build
 
     $ cd blinkenlights-java
-    $ mvn install
+    $ ./mvnw install
 
 ## How to run bmix
 
