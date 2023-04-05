@@ -14,10 +14,28 @@ formats are supported.
 
 * bmix-statistics - a Java GUI which displays the configuration and status of a running bmix instance.
 
+## See everything work together in an example configuration
+
+Requires JDK 11 or newer on your $PATH or in $JAVA_HOME.
+
+    ./demo.sh
+
+This builds the Java sources, runs bmix with an example configuration (same as was used on Stereoscope in Toronto),
+monitors it with BMix Statistics, and opens a sender window.
+
+When prompted (by BMix Statistics) for which BMix to monitor, the default "localhost" is correct.
+
+To play videos:
+
+* [Get some .blm or .bml movie files](https://github.com/blinkenlights/blinkenlights/tree/master)
+* Drag a movie file onto the Sender window 
+* Set a target port number in your sender window, e.g. "localhost:2326"
+  * Consult the BMix Statistics window to choose a port number. For example, background is localhost:2329.
+* Open more Sender windows with File --> New Window and send other videos to other ports
+
 ## How to build
 
-    $ cd blinkenlights-java
-    $ ./mvnw install
+    $ ./mvnw package
 
 ## How to run bmix
 
