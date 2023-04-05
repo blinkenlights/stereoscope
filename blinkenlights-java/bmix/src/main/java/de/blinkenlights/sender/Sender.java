@@ -29,9 +29,9 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -62,6 +62,8 @@ import de.blinkenlights.bmix.network.HostAndPort;
 public class Sender implements MRJOpenDocumentHandler {
 
     private static final String DEFAULT_STATUS_MESSAGE = "<html><center>Drag BML file here</center>";
+    private static final List<Sender> LIVE_SENDERS = new ArrayList<Sender>();
+
     private final JLabel statusLabel;
     private final JFrame frame;
     private BMovieSender movieSender;
@@ -76,7 +78,25 @@ public class Sender implements MRJOpenDocumentHandler {
         MRJApplicationUtils.registerOpenDocumentHandler(this);
 
         frame = new JFrame("Stereoscope Player");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                frame.dispose();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if (movieSender != null) {
+                    movieSender.stopSending();
+                }
+
+                LIVE_SENDERS.remove(Sender.this);
+                if (LIVE_SENDERS.isEmpty()) {
+                    System.out.println("Last window closed. Exiting.");
+                    System.exit(0);
+                }
+            }
+        });
 
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
@@ -85,6 +105,7 @@ public class Sender implements MRJOpenDocumentHandler {
         menuBar.add(m);
 
         m.add(new JMenuItem(new OpenFileAction(frame, this)));
+        m.add(new JMenuItem(new NewWindowAction()));
 
         statusLabel = new JLabel(DEFAULT_STATUS_MESSAGE, JLabel.CENTER);
         frame.add(statusLabel);
@@ -156,7 +177,7 @@ public class Sender implements MRJOpenDocumentHandler {
 
         frame.setDropTarget(new DropTarget(frame, new FileDropListener()));
         frame.setVisible(true);
-
+        LIVE_SENDERS.add(this);
     }
 
     public void handleOpenFile(File fileName) {
