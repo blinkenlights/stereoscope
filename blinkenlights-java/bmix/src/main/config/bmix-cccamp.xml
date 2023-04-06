@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE bmix PUBLIC "-//BMix//DTD BMix 1.0//EN" "bmix.dtd">
+<bmix version="1.0" vmatrix-width="240" vmatrix-height="8" max-frame-interval="50">
+
+<!-- inputs -->
+  <input id="Debug" 	  listen-port="2332" alpha-mode="opaque" timeout="4000" />
+  <input id="Graffiti"    listen-port="2331" alpha-mode="chroma-key" timeout="4000" />
+  <input id="Foreground"  listen-port="2330" alpha-mode="opaque" timeout="4000" />
+  <input id="Window-0"    listen-port="2320" />
+  <input id="Window-1"    listen-port="2321" />
+  <input id="Window-2"    listen-port="2322" />
+  <input id="Window-3"    listen-port="2323" />
+  <input id="Window-4"    listen-port="2324" />
+  <input id="Window-5"    listen-port="2325" />
+  <input id="Window-6"    listen-port="2326" />
+  <input id="Window-7"    listen-port="2327" />
+  <input id="Window-8"    listen-port="2328" />
+  <input id="Window-9"    listen-port="2329" />
+  <input id="Background"  listen-port="2319" />
+
+<!-- layers, in their stack-up order -->  
+  <layer input="Debug"       x="0"   y="0"  width="240" height="8" />
+  <layer input="Graffiti"    x="0"   y="0"  width="240" height="8" />
+  <layer input="Foreground"  x="0"   y="0"  width="240" height="8" />
+  <layer input="Window-0"    x="0"   y="0"  width="8" height="8" />
+  <layer input="Window-1"    x="24"  y="0"  width="8" height="8" />
+  <layer input="Window-2"    x="48"  y="0"  width="8" height="8" />
+  <layer input="Window-3"    x="72"  y="0"  width="8" height="8" />
+  <layer input="Window-4"    x="96"  y="0"  width="8" height="8" />
+  <layer input="Window-5"    x="120" y="0"  width="8" height="8" />
+  <layer input="Window-6"    x="144" y="0"  width="8" height="8" />
+  <layer input="Window-7"    x="168" y="0"  width="8" height="8" />
+  <layer input="Window-8"    x="192" y="0"  width="8" height="8" />
+  <layer input="Window-9"    x="216" y="0"  width="8" height="8" />
+  <layer input="Background"  x="0"   y="0"  width="240" height="8" />
+
+
+<!-- blinkenproxy output of the whole house -->
+<dynamic-output listen-port="4242">
+	<screen x="0" y="0" width="240" height="8" />
+</dynamic-output>
+
+<!-- screen 0 (leftmost) -->
+<output dest-addr="192.168.100.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="0" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 1 -->
+<output dest-addr="192.168.101.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="24" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 2 -->
+<output dest-addr="192.168.102.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="48" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 3 -->
+<output dest-addr="192.168.103.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="72" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 4 -->
+<output dest-addr="192.168.104.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="96" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 5 -->
+<output dest-addr="192.168.105.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="120" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 6 -->
+<output dest-addr="192.168.106.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="144" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 7 -->
+<output dest-addr="192.168.107.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="168" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 8 -->
+<output dest-addr="192.168.108.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="192" y="0" width="8" height="8" />
+</output>
+
+<!-- screen 9 -->
+<output dest-addr="192.168.109.255" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="10">
+		<screen x="24" y="216" width="8" height="8" />
+</output>
+
+<!-- example recording output
+<recording-output directory="log" base-name="stereoscope">
+	<screen x="0" y="0" width="240" height="8" />
+</recording-output>
+-->
+
+<!-- example proxy send to proxy.blinkenlights.net 
+<output dest-addr="proxy.blinkenlights.net" dest-port="2323"
+	packet-format="MCU_MULTIFRAME" min-frame-interval="100">
+	        <screen x="16" y="11" width="22" height="17" screen-id="5" />
+	        <screen x="50" y="5" width="30" height="23" screen-id="6" />
+</output>
+-->
+
+
+</bmix>
